@@ -1,8 +1,3 @@
-# NLAB
-NLAB is primarily designed for macOS (Apple M2 / x86). For Linux runners, you’ll need to adjust paths, compilers, and dependencies (e.g., use apt instead of brew). The modular design allows you to swap out compiler detection for Linux if needed.
-
-
-
 # NLAB – Nuclear Lab HPC Environment
 
 **NLAB** is a modular, SQLite‑backed build and environment management system for scientific and high‑performance computing (HPC) software stacks. It was designed for **macOS (Apple M2 / x86)** but can be adapted to Linux with minimal changes.
