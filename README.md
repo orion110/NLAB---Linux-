@@ -50,7 +50,8 @@ All modules are sourced in the correct order by your `~/.zshrc` (or a custom loa
 - **Build tools**: Xcode Command Line Tools (for macOS) or equivalent on Linux.
 
 
-## NLAB on Linux (Debian)
+## Installation (Linux)
+
 
 ```bash
 git clone https://github.com/orion110/NLAB-Linux
