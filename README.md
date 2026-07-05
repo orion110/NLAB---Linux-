@@ -10,13 +10,13 @@ Nuclear Lab HPC Environment
 
 ## Features
 
-- SQLite‑centric** – All package metadata (versions, build systems, dependencies, compiler requirements, source locations) lives in a single SQLite database.
-- Modular Architecture** – Separate modules for compiler switching (`core`), package registry (`db`), build backends (`brain`), source scanning (`meta/generation`), phases, and environment stacks.
-- Compiler‑Aware** – Seamlessly switch between GCC, Clang, LLVM, and MPI toolchains with a single `comp` command.
-- Flat Installation** – All packages install into a single `$NLAB_EXEC` prefix (bin/, lib/, include/), eliminating library path conflicts.
-- Dependency Resolution** – Automatic topological sorting of packages based on runtime and build dependencies stored in the DB.
-- Phase Management** – Organize hundreds of packages into logical build phases (e.g., bootstrap, numerics, nuclear) with a simple CLI.
-- Inventory & Inspection** – Query which package owns a file, check ABI consistency, list all variants, and more.
+- SQLite‑centric – All package metadata (versions, build systems, dependencies, compiler requirements, source locations) lives in a single SQLite database.
+- Modular Architecture – Separate modules for compiler switching (`core`), package registry (`db`), build backends (`brain`), source scanning (`meta/generation`), phases, and environment stacks.
+- Compiler‑Aware – Seamlessly switch between GCC, Clang, LLVM, and MPI toolchains with a single `comp` command.
+- Flat Installation – All packages install into a single `$NLAB_EXEC` prefix (bin/, lib/, include/), eliminating library path conflicts.
+- Dependency Resolution – Automatic topological sorting of packages based on runtime and build dependencies stored in the DB.
+- Phase Management – Organize hundreds of packages into logical build phases (e.g., bootstrap, numerics, nuclear) with a simple CLI.
+- Inventory & Inspection – Query which package owns a file, check ABI consistency, list all variants, and more.
 
 ---
 
