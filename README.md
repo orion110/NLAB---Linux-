@@ -72,7 +72,11 @@ sudo apt install -y \
 ## Installation
 
 ### 1. Clone the repository
+```bash
 git clone https://github.com/orion110/NLAB-Linux
+```
+
+
 git clone https://github.com/salemph/NLAB (macOs)
 
 ```bash
