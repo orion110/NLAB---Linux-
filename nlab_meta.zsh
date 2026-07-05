@@ -258,7 +258,7 @@ scan_deps() {
     # HDF5 special
     if [[ "$pkg" == "hdf5"* ]] || [[ -f "H5public.h" ]] || [[ -f "hdf5.h" ]]; then
         deps="zlib"; build_deps="pkg-config"; flags="--enable-shared --disable-static --with-zlib=$NLAB_EXEC"
-        if [[ -f "$NLAB_EXEC/lib/libszip.a" ]] || [[ -f "$NLAB_EXEC/lib/libszip.dylib" ]]; then
+        if [[ -f "$NLAB_EXEC/lib/libszip.a" ]] || [[ -f "$NLAB_EXEC/lib/libszip.${NLAB_SHLIB_EXT:-so}" ]]; then
             deps+=" szip"; flags+=" --with-szlib=$NLAB_EXEC"
         fi
         if command -v mpicc &>/dev/null; then

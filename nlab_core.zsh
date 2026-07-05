@@ -7,24 +7,50 @@
 # if [[ -n "$_NLAB_CORE_LOADED" ]]; then return 0; fi
 # _NLAB_CORE_LOADED=1
 
-# ── SDK & Developer Tools ───────────────────────────────
-export DEVELOPER_DIR="${DEVELOPER_DIR:-$(xcode-select -p 2>/dev/null)}"
-[[ -z "$DEVELOPER_DIR" ]] && export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+# ============================================================================
+# OS DETECTION — everything below branches on this
+# ============================================================================
+case "$(uname -s)" in
+    Darwin) export NLAB_OS="darwin"; export NLAB_SHLIB_EXT="dylib" ;;
+    Linux)  export NLAB_OS="linux";  export NLAB_SHLIB_EXT="so" ;;
+    *)      export NLAB_OS="unknown"; export NLAB_SHLIB_EXT="so" ;;
+esac
 
-export SDKROOT="${SDKROOT:-$(xcrun --show-sdk-path 2>/dev/null)}"
-if [[ -z "$SDKROOT" ]]; then
-    SDKROOT=$(ls -d "$DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX"*.sdk 2>/dev/null | sort -V | tail -1)
-    export SDKROOT
+# ── SDK & Developer Tools (macOS only) ──────────────────
+if [[ "$NLAB_OS" == "darwin" ]]; then
+    export DEVELOPER_DIR="${DEVELOPER_DIR:-$(xcode-select -p 2>/dev/null)}"
+    [[ -z "$DEVELOPER_DIR" ]] && export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+
+    export SDKROOT="${SDKROOT:-$(xcrun --show-sdk-path 2>/dev/null)}"
+    if [[ -z "$SDKROOT" ]]; then
+        SDKROOT=$(ls -d "$DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX"*.sdk 2>/dev/null | sort -V | tail -1)
+        export SDKROOT
+    fi
 fi
 
 # ============================================================================
 # JAVA ENVIRONMENT
 # ============================================================================
-export JAVA_11_HOME="/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home"
-export JAVA_17_HOME="/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home"
-export JAVA_21_HOME="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
-export JAVA_25_HOME="/Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home"
-export JAVA_HOME="$JAVA_25_HOME"
+if [[ "$NLAB_OS" == "darwin" ]]; then
+    export JAVA_11_HOME="/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home"
+    export JAVA_17_HOME="/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home"
+    export JAVA_21_HOME="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"
+    export JAVA_25_HOME="/Library/Java/JavaVirtualMachines/jdk-25.jdk/Contents/Home"
+else
+    # Debian/Ubuntu layout: /usr/lib/jvm/java-<N>-openjdk-<arch>/
+    _nlab_find_jdk() {
+        local ver="$1"
+        local -a matches=( /usr/lib/jvm/java-${ver}-openjdk*(N) )
+        (( ${#matches[@]} > 0 )) && print -r -- "${matches[-1]}"
+    }
+    export JAVA_11_HOME="$(_nlab_find_jdk 11)"
+    export JAVA_17_HOME="$(_nlab_find_jdk 17)"
+    export JAVA_21_HOME="$(_nlab_find_jdk 21)"
+    export JAVA_25_HOME="$(_nlab_find_jdk 25)"
+    unset -f _nlab_find_jdk
+fi
+# Pick the highest available as default, falling back gracefully
+export JAVA_HOME="${JAVA_25_HOME:-${JAVA_21_HOME:-${JAVA_17_HOME:-${JAVA_11_HOME:-}}}}"
 
 javaswi() {
     local version="$1"
@@ -52,24 +78,40 @@ nlab_set_path() {
     for p in "${system_paths[@]}"; do
         [[ -d "$p" ]] && [[ ":$PATH:" != *":$p:"* ]] && export PATH="$PATH:$p"
     done
+
     # TeX
-    for tex in "/Library/TeX/texbin" "/usr/local/texlive/2024/bin/universal-darwin" "/opt/local/share/texmf-texlive/bin"; do
-        if [[ -d "$tex" ]]; then
+    local -a tex_candidates
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        tex_candidates=( "/Library/TeX/texbin" "/usr/local/texlive/2024/bin/universal-darwin" "/opt/local/share/texmf-texlive/bin" )
+    else
+        tex_candidates=( "/usr/bin" /usr/local/texlive/*/bin/x86_64-linux(N) )
+    fi
+    for tex in "${tex_candidates[@]}"; do
+        if [[ -d "$tex" ]] && command -v "$tex/tex" >/dev/null 2>&1; then
             export TEX="$tex"
             [[ ":$PATH:" != *":$tex:"* ]] && export PATH="$PATH:$tex"
             break
         fi
     done
+
     # Other appends
-    local -a paths_to_add=(
-        "$DEVELOPER_DIR/usr/bin" "$NLAB_EXEC" "$JAVA_HOME/bin" "$HOME/Library/Python/3.9/bin"
-        "/opt/X11/bin" "/private/var/select/X11/bin"
-        "/Volumes/nlab/Applications/Doxygen.app/Contents/MacOS"
-        "/Volumes/nlab/Applications/Emacs.app/Contents/MacOS"
-        "/Volumes/nlab/Applications/Gmsh.app/Contents/MacOS"
-        "/Volumes/nlab/Applications/gxsview.app/Contents/MacOS"
-        "/Applications/SCALE-6.2.1.app/Contents/MacOS"
-    )
+    local -a paths_to_add=( "$NLAB_EXEC" )
+    [[ -n "$JAVA_HOME" ]] && paths_to_add+=( "$JAVA_HOME/bin" )
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        paths_to_add+=(
+            "$DEVELOPER_DIR/usr/bin" "$HOME/Library/Python/3.9/bin"
+            "/opt/X11/bin" "/private/var/select/X11/bin"
+            "/Volumes/nlab/Applications/Doxygen.app/Contents/MacOS"
+            "/Volumes/nlab/Applications/Emacs.app/Contents/MacOS"
+            "/Volumes/nlab/Applications/Gmsh.app/Contents/MacOS"
+            "/Volumes/nlab/Applications/gxsview.app/Contents/MacOS"
+            "/Applications/SCALE-6.2.1.app/Contents/MacOS"
+        )
+    else
+        paths_to_add+=(
+            "$HOME/.local/bin" "/usr/lib/x86_64-linux-gnu"
+        )
+    fi
     for p in "${paths_to_add[@]}"; do
         [[ -d "$p" ]] && [[ ":$PATH:" != *":$p:"* ]] && export PATH="$PATH:$p"
     done
@@ -77,8 +119,10 @@ nlab_set_path() {
 
 nlab_set_lib_paths() {
     export LIBRARY_PATH="$NLAB_EXEC/lib:/usr/lib:/usr/local/lib"
-    export DYLD_LIBRARY_PATH="$NLAB_EXEC/lib"
-    export DYLD_FALLBACK_LIBRARY_PATH="$NLAB_EXEC/lib:/usr/lib:/usr/local/lib"
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        export DYLD_LIBRARY_PATH="$NLAB_EXEC/lib"
+        export DYLD_FALLBACK_LIBRARY_PATH="$NLAB_EXEC/lib:/usr/lib:/usr/local/lib"
+    fi
     export LD_LIBRARY_PATH="$NLAB_EXEC/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 }
 
@@ -88,7 +132,13 @@ nlab_set_lib_paths() {
 _set_common_env() {
     nlab_set_path
     nlab_set_lib_paths
-    export CFLAGS="-O2 -mcpu=apple-m2 -fPIC -I$NLAB_EXEC/include"
+    local arch_flag=""
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        arch_flag="-mcpu=apple-m2"
+    else
+        arch_flag="-march=native"
+    fi
+    export CFLAGS="-O2 $arch_flag -fPIC -I$NLAB_EXEC/include"
     export CXXFLAGS="$CFLAGS"
     export FFLAGS="$CFLAGS"
     export LDFLAGS="-L$NLAB_EXEC/lib -Wl,-rpath,$NLAB_EXEC/lib"
@@ -98,7 +148,16 @@ _set_common_env() {
 
 check_sdk() {
     echo "🔧 Checking SDK environment..."
-    [[ -d /usr/include || -d /opt/homebrew/include ]] && { echo "✅ SDK found"; return 0; }
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        [[ -d /usr/include || -d /opt/homebrew/include ]] && { echo "✅ SDK found"; return 0; }
+    else
+        # Debian/Ubuntu: build-essential provides headers under /usr/include
+        if [[ -d /usr/include ]] && command -v gcc >/dev/null 2>&1; then
+            echo "✅ SDK found (build-essential)"; return 0
+        fi
+        echo "⚠️  Missing build tools — try: sudo apt install build-essential"
+        return 1
+    fi
     echo "⚠️ SDK not fully detected"
 }
 
@@ -386,7 +445,7 @@ nlab_list_variants() {
             echo "\n── Binaries in \$NLAB_EXEC/bin ──"
             [[ -d "$NLAB_EXEC/bin" ]] && ls "$NLAB_EXEC/bin" 2>/dev/null | head -30 | while read bin; do echo "   📦 $bin"; done
             echo "\n── Libraries in \$NLAB_EXEC/lib ──"
-            [[ -d "$NLAB_EXEC/lib" ]] && ls "$NLAB_EXEC/lib"/*.dylib "$NLAB_EXEC/lib"/*.a 2>/dev/null | head -20 | while read lib; do echo "   📚 $(basename "$lib")"; done
+            [[ -d "$NLAB_EXEC/lib" ]] && ls "$NLAB_EXEC/lib"/*."$NLAB_SHLIB_EXT" "$NLAB_EXEC/lib"/*.a 2>/dev/null | head -20 | while read lib; do echo "   📚 $(basename "$lib")"; done
             ;;
         *)
             echo "=== $filter ==="
@@ -411,16 +470,31 @@ nlab_detect_system_compilers() {
 # ============================================================================
 # BUILD OPTIMIZATIONS (unchanged)
 # ============================================================================
+nlab_total_cores() {
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        sysctl -n hw.activecpu
+    else
+        nproc --all 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4
+    fi
+}
+nlab_total_ram_gb() {
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        echo $(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 ))
+    else
+        # /proc/meminfo MemTotal is in kB
+        awk '/MemTotal/ {print int($2/1024/1024)}' /proc/meminfo 2>/dev/null || echo 8
+    fi
+}
 get_make_jobs() {
-    local total_cores=$(sysctl -n hw.activecpu)
-    local ram_gb=$(($(sysctl -n hw.memsize) / 1024 / 1024 / 1024))
+    local total_cores=$(nlab_total_cores)
+    local ram_gb=$(nlab_total_ram_gb)
     local ram_based_jobs=$((ram_gb / 2))
     local recommended_jobs=$((ram_based_jobs < total_cores ? ram_based_jobs : total_cores))
     if (( recommended_jobs > 12 )); then echo 12; elif (( recommended_jobs < 2 )); then echo 2; else echo $recommended_jobs; fi
 }
 maks() { local jobs=$(get_make_jobs); print -P "%F{green}🔧 make -j$jobs (${cores} cores, ${ram}GB RAM)%f"; make -j$jobs "$@"; }
-makf() { make -j$(sysctl -n hw.activecpu) "$@"; }
-maksa() { local safe_jobs=$(( $(sysctl -n hw.activecpu) / 2 )); (( safe_jobs < 1 )) && safe_jobs=1; print -P "%F{yellow}🐢 Safe mode: -j$safe_jobs%f"; make -j$safe_jobs "$@"; }
+makf() { make -j$(nlab_total_cores) "$@"; }
+maksa() { local safe_jobs=$(( $(nlab_total_cores) / 2 )); (( safe_jobs < 1 )) && safe_jobs=1; print -P "%F{yellow}🐢 Safe mode: -j$safe_jobs%f"; make -j$safe_jobs "$@"; }
 maksi() { make -j1 "$@"; }
 makin() { make install; }
 nlab-lto() { export LDFLAGS="$LDFLAGS -flto=auto"; export CFLAGS="$CFLAGS -flto=auto"; echo "✅ LTO enabled"; }

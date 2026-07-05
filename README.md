@@ -1,5 +1,6 @@
 # NLAB – Linux  
-[![image-(1).jpg](https://i.postimg.cc/Yq5fNp3J/image-(1).jpg)](https://postimg.cc/JGQkMCSq)
+[![image.jpg](https://i.postimg.cc/rp0kBNW8/image.jpg)](https://postimg.cc/1gQ266JT)
+
 
 
 **NLAB** is a modular, SQLite‑backed build and environment management system for scientific and high‑performance computing (HPC) software stacks. It was designed for **macOS (Apple M2 / x86)** but can be adapted to Linux with minimal changes.

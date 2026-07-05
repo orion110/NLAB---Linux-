@@ -39,10 +39,18 @@ nucenv_info() {
 # -----------------------------------------------------------------------------
 fix_pkgconfig() {
     echo "🔧 Fixing pkg-config files..."
+    # BSD sed (macOS) requires `-i ''`; GNU sed (Linux) errors on that and
+    # wants `-i` with no argument. Detect once and use the right form.
+    local -a sed_i
+    if [[ "$NLAB_OS" == "darwin" ]]; then
+        sed_i=(sed -i '')
+    else
+        sed_i=(sed -i)
+    fi
     for pc in "$NLAB_EXEC/lib/pkgconfig/"*.pc; do
         [ -f "$pc" ] || continue
-        sed -i '' "s|/usr/local|$NLAB_EXEC|g" "$pc" 2>/dev/null
-        sed -i '' "s|/opt/homebrew|$NLAB_EXEC|g" "$pc" 2>/dev/null
+        "${sed_i[@]}" "s|/usr/local|$NLAB_EXEC|g" "$pc" 2>/dev/null
+        "${sed_i[@]}" "s|/opt/homebrew|$NLAB_EXEC|g" "$pc" 2>/dev/null
     done
     echo "✅ pkg-config files fixed"
 }

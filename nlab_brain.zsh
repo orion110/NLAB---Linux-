@@ -61,11 +61,11 @@ nlab_get_build_env() {
                 slepc)        cmake_flags+=" -DSLEPC_DIR=$NLAB_EXEC" ;;
                 boost)        cmake_flags+=" -DBoost_ROOT=$NLAB_EXEC -DBoost_NO_SYSTEM_PATHS=ON" ;;
                 eigen|eigen3) cmake_flags+=" -DEigen3_DIR=$NLAB_EXEC/share/eigen3/cmake" ;;
-                metis)        cmake_flags+=" -DMETIS_DIR=$NLAB_EXEC -DTPL_METIS_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_METIS_LIBRARIES=$NLAB_EXEC/lib/libmetis.dylib" ;;
-                parmetis)     cmake_flags+=" -DPARMETIS_DIR=$NLAB_EXEC -DTPL_PARMETIS_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_PARMETIS_LIBRARIES=$NLAB_EXEC/lib/libparmetis.dylib" ;;
-                scotch)       cmake_flags+=" -DScotch_DIR=$NLAB_EXEC -DTPL_SCOTCH_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_SCOTCH_LIBRARIES=$NLAB_EXEC/lib/libscotch.dylib" ;;
+                metis)        cmake_flags+=" -DMETIS_DIR=$NLAB_EXEC -DTPL_METIS_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_METIS_LIBRARIES=$NLAB_EXEC/lib/libmetis.${NLAB_SHLIB_EXT}" ;;
+                parmetis)     cmake_flags+=" -DPARMETIS_DIR=$NLAB_EXEC -DTPL_PARMETIS_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_PARMETIS_LIBRARIES=$NLAB_EXEC/lib/libparmetis.${NLAB_SHLIB_EXT}" ;;
+                scotch)       cmake_flags+=" -DScotch_DIR=$NLAB_EXEC -DTPL_SCOTCH_INCLUDE_DIRS=$NLAB_EXEC/include -DTPL_SCOTCH_LIBRARIES=$NLAB_EXEC/lib/libscotch.${NLAB_SHLIB_EXT}" ;;
                 hypre)        cmake_flags+=" -DHYPRE_ROOT=$NLAB_EXEC" ;;
-                openblas|blas|lapack) cmake_flags+=" -DBLAS_LIBRARIES=$NLAB_EXEC/lib/libopenblas.dylib -DLAPACK_LIBRARIES=$NLAB_EXEC/lib/libopenblas.dylib" ;;
+                openblas|blas|lapack) cmake_flags+=" -DBLAS_LIBRARIES=$NLAB_EXEC/lib/libopenblas.${NLAB_SHLIB_EXT} -DLAPACK_LIBRARIES=$NLAB_EXEC/lib/libopenblas.${NLAB_SHLIB_EXT}" ;;
                 zlib)         cmake_flags+=" -DZLIB_ROOT=$NLAB_EXEC" ;;
                 libpng|png)   cmake_flags+=" -DPNG_ROOT=$NLAB_EXEC" ;;
                 libjpeg-turbo|jpeg) cmake_flags+=" -DJPEG_ROOT=$NLAB_EXEC" ;;
@@ -93,7 +93,7 @@ nlab_get_build_env() {
     export PKG_CONFIG_PATH="$NLAB_EXEC/lib/pkgconfig:$NLAB_EXEC/share/pkgconfig${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}"
     export LIBRARY_PATH="$NLAB_EXEC/lib${LIBRARY_PATH:+:${LIBRARY_PATH}}"
     export LD_LIBRARY_PATH="$NLAB_EXEC/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-    export DYLD_LIBRARY_PATH="$NLAB_EXEC/lib${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"
+    [[ "$NLAB_OS" == "darwin" ]] && export DYLD_LIBRARY_PATH="$NLAB_EXEC/lib${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"
     export CPATH="$NLAB_EXEC/include${CPATH:+:${CPATH}}"
     export C_INCLUDE_PATH="$NLAB_EXEC/include${C_INCLUDE_PATH:+:${C_INCLUDE_PATH}}"
     export CPLUS_INCLUDE_PATH="$NLAB_EXEC/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}"
@@ -523,7 +523,7 @@ nlab_build_binary() {
     done
     for d in lib lib64; do
         [[ ! -d "$source_dir/$d" ]] && continue
-        for f in "$source_dir/$d"/*.{dylib,so,a} 2>/dev/null; do
+        for f in "$source_dir/$d"/*.dylib "$source_dir/$d"/*.so "$source_dir/$d"/*.so.* "$source_dir/$d"/*.a; do
             [[ -f "$f" ]] && cp "$f" "$NLAB_PREFIX/lib/" && ((n++))
         done
     done

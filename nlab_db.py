@@ -55,8 +55,11 @@ def get_nlab_root() -> Path:
             if Path(candidate).exists():
                 return Path(candidate)
         raise RuntimeError(
-            "NLAB_ROOT not set. Source your nlab environment first.\n"
-            "  e.g.  source /Volumes/nlab/env/nlab_env.zshrc"
+            "NLAB_ROOT not set. Source your nlab environment first, e.g.:\n"
+            "  export NLAB_ROOT=\"$HOME/nlab\"   # or wherever you installed it\n"
+            "  source \"$NLAB_ROOT/env/nlab_core.zsh\"\n"
+            "  source \"$NLAB_ROOT/env/nlab_db.zsh\"\n"
+            "(macOS example: source /Volumes/nlab/env/nlab_core.zsh)"
         )
     return Path(root)
 
@@ -280,11 +283,11 @@ class NlabDB:
                          status: str = "pending", duration: str = "",
                           nfiles: int = 0, notes: str = "") -> int:
         pkg = self.get_package(pkg_name)
-                if not pkg:
-                    # Create a minimal package entry if not present
-                    pkg_id = self.upsert_package(pkg_name)
-                else:
-                    pkg_id = pkg["id"]
+        if not pkg:
+            # Create a minimal package entry if not present
+            pkg_id = self.upsert_package(pkg_name)
+        else:
+            pkg_id = pkg["id"]
         cur = self.conn.execute(
             """INSERT INTO installs
                  (pkg_id, version, compiler_family, compiler_version,
@@ -1213,14 +1216,23 @@ def main():
     # register-package
     p = sub.add_parser("register-package", help="Register/update package metadata")
     p.add_argument("name")
-    p.add_argument("--description", default="")# installed
-    p.add_argument("--build-system", default="autotools")sub.add_parser("installed", help="List all installed packages")
+    p.add_argument("--description", default="")
+    p.add_argument("--build-system", default="autotools")
     p.add_argument("--url", default="")
-    p.add_argument("--homepage", default="")# info
-    p.add_argument("--source-url", default="")p = sub.add_parser("info", help="Show package info")
-    p.add_argument("--source-path", default="")p.add_argument("pkg")
-    p.add_argument("--required-compiler", default="")p.add_argument("--compiler-family", dest="compiler_family", default="")
-    p.add_argument("--flags", default="")p.add_argument("--compiler-version", dest="compiler_version", default="")
+    p.add_argument("--homepage", default="")
+    p.add_argument("--source-url", default="")
+    p.add_argument("--source-path", default="")
+    p.add_argument("--required-compiler", default="")
+    p.add_argument("--flags", default="")
+
+    # installed
+    sub.add_parser("installed", help="List all installed packages")
+
+    # info
+    p = sub.add_parser("info", help="Show package info")
+    p.add_argument("pkg")
+    p.add_argument("--compiler-family", dest="compiler_family", default="")
+    p.add_argument("--compiler-version", dest="compiler_version", default="")
     
     # register (install)
     p = sub.add_parser("register", help="Register a package install")
