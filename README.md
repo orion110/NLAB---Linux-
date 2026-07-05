@@ -198,7 +198,7 @@ We welcome contributions! Please open an issue or pull request for:
 ## Acknowledgments
 
 NLAB was built to simplify the management of large, multi‑compiler scientific software stacks. It draws inspiration from Spack, Homebrew, and Conda but takes a minimalist, SQLite‑first approach tailored for macOS HPC environments.
-for any refernces or updata please contact me @ salemphi@icloud.com
+for any refernces or updates please contact me @ salemphi@icloud.com
 
 
 
