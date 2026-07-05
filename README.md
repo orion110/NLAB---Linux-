@@ -1,4 +1,6 @@
-# NLAB – Nuclear Lab HPC Environment
+# NLAB – Linux  
+
+Nuclear Lab HPC Environment
 
 **NLAB** is a modular, SQLite‑backed build and environment management system for scientific and high‑performance computing (HPC) software stacks. It was designed for **macOS (Apple M2 / x86)** but can be adapted to Linux with minimal changes.
 
@@ -8,13 +10,13 @@
 
 ## Features
 
-- **🔬 SQLite‑centric** – All package metadata (versions, build systems, dependencies, compiler requirements, source locations) lives in a single SQLite database.
-- **🧩 Modular Architecture** – Separate modules for compiler switching (`core`), package registry (`db`), build backends (`brain`), source scanning (`meta/generation`), phases, and environment stacks.
-- **⚙️ Compiler‑Aware** – Seamlessly switch between GCC, Clang, LLVM, and MPI toolchains with a single `comp` command.
-- **📦 Flat Installation** – All packages install into a single `$NLAB_EXEC` prefix (bin/, lib/, include/), eliminating library path conflicts.
-- **🔗 Dependency Resolution** – Automatic topological sorting of packages based on runtime and build dependencies stored in the DB.
-- **🧭 Phase Management** – Organize hundreds of packages into logical build phases (e.g., bootstrap, numerics, nuclear) with a simple CLI.
-- **📊 Inventory & Inspection** – Query which package owns a file, check ABI consistency, list all variants, and more.
+- **   SQLite‑centric** – All package metadata (versions, build systems, dependencies, compiler requirements, source locations) lives in a single SQLite database.
+- **   Modular Architecture** – Separate modules for compiler switching (`core`), package registry (`db`), build backends (`brain`), source scanning (`meta/generation`), phases, and environment stacks.
+- **   Compiler‑Aware** – Seamlessly switch between GCC, Clang, LLVM, and MPI toolchains with a single `comp` command.
+- **   Flat Installation** – All packages install into a single `$NLAB_EXEC` prefix (bin/, lib/, include/), eliminating library path conflicts.
+- **   Dependency Resolution** – Automatic topological sorting of packages based on runtime and build dependencies stored in the DB.
+- **   Phase Management** – Organize hundreds of packages into logical build phases (e.g., bootstrap, numerics, nuclear) with a simple CLI.
+- **   Inventory & Inspection** – Query which package owns a file, check ABI consistency, list all variants, and more.
 
 ---
 
@@ -199,4 +201,4 @@ for any refernces or updata please contact me @ salemphi@icloud.com
 
 ---
 
-Happy building! 🚀
+Happy building! 
