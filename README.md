@@ -51,9 +51,9 @@ All modules are sourced in the correct order by your `~/.zshrc` (or a custom loa
 - **Build tools**: Xcode Command Line Tools (for macOS) or equivalent on Linux.
 
 
-NLAB on Linux (Debian/Ubuntu)
+## NLAB on Linux (Debian/Ubuntu)
 
-
+```bash
 1. Install system dependencies
 sudo apt update
 sudo apt install -y \
@@ -70,7 +70,7 @@ export NLAB_ROOT="$HOME/nlab"
 mkdir -p "$NLAB_ROOT/env"
 echo "NLAB_ROOT is set to: $NLAB_ROOT"
 python3 /home/user/Downloads/NLAB-Linux-main/nlab_db.py init
-
+```
 
 
 
