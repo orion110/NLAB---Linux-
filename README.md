@@ -2,10 +2,8 @@
 [![image-(1).jpg](https://i.postimg.cc/Yq5fNp3J/image-(1).jpg)](https://postimg.cc/JGQkMCSq)
 
 
-**NLAB** is a modular, SQLite‑backed build and environment management system for scientific and high‑performance computing (HPC) software stacks. It was designed for **macOS (Apple M2 / x86)** but can be adapted to Linux with minimal changes.
-
-> NLAB is primarily designed for macOS (Apple M2 / x86). For Linux runners, you’ll need to adjust paths, compilers, and dependencies (e.g., use `apt` instead of `brew`). The modular design allows you to swap out compiler detection for Linux if needed.
-
+**NLAB** is a modular, SQLite‑backed build and environment management system for scientific and high‑performance computing (HPC) software stacks. It was designed for **macOS (Apple M2 / x86)**
+> NLAB is primarily designed for macOS (Apple M2 / x86). 
 ---
 
 ## Features
@@ -52,16 +50,30 @@ All modules are sourced in the correct order by your `~/.zshrc` (or a custom loa
 - **SQLite3** (built‑in on macOS)
 - **Build tools**: Xcode Command Line Tools (for macOS) or equivalent on Linux.
 
-For Linux, you will need to:
-- Replace `brew` with `apt` (or your package manager).
-- Adjust compiler paths (`/usr/bin/clang` → system‑specific).
-- Modify the `nlab_core.zsh` compiler detection to work with your distribution.
 
----
+NLAB on Linux (Debian/Ubuntu)
+
+
+1. Install system dependencies
+sudo apt update
+sudo apt install -y \
+  zsh build-essential gcc g++ gfortran \
+  cmake ninja-build meson pkg-config \
+  sqlite3 libsqlite3-dev python3 python3-pip \
+  git curl \
+  openmpi-bin libopenmpi-dev \
+  default-jdk \
+  texlive-full
+
+
+
+
 
 ## Installation
 
 ### 1. Clone the repository
+git clone https://github.com/orion110/NLAB-Linux
+git clone https://github.com/salemph/NLAB (macOs)
 
 ```bash
 git clone https://github.com/your-org/NLAB.git /Volumes/nlab   # or wherever you want NLAB_ROOT
@@ -166,22 +178,8 @@ nlab env-deactivate
 ```bash
 nlab status          # Show current state (compiler, installed packages, etc.)
 nlab help            # Full CLI reference
-```
 
----
 
-## Customization and Linux Adaptation
-
-NLAB is modular, so adapting to Linux is straightforward:
-
-1. **Compiler detection** – In `nlab_core.zsh`, modify the `nlab_detect_compiler` function to look for system GCC/clang in standard Linux locations.
-2. **Path management** – The `nlab_set_path` function currently adds macOS‑specific paths; edit or extend it for your distribution.
-3. **Dependencies** – Replace `brew` with `apt`/`yum` in any environment scripts.
-4. **Build backends** – The backend functions (CMake, Autotools, etc.) are platform‑agnostic; they use environment variables set by the core.
-
-A Linux‑specific branch can be maintained without altering the core logic.
-
----
 
 ## Contributing
 
